@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HARPCast – Absetzpunktplanung mit Ensemble-Wettermodellen</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>HARPCast</h1>
+    <p>Absetzpunktplanung mit Ensemble-Wettermodellen: Wo ist der HARP, und wie verlässlich ist er?</p>
+  </header>
+
+  <main class="layout">
+    <aside class="panel controls">
+      <h2>Ort &amp; Modell</h2>
+      <div id="map"></div>
+      <p class="hint">Klick auf die Karte setzt den Zielpunkt (DIP).</p>
+      <div class="field-row coord-deg">
+        <label>Breite <input type="number" id="lat" step="0.0001" value="33.1134"></label>
+        <label>Länge <input type="number" id="lon" step="0.0001" value="-112.2697"></label>
+      </div>
+      <label class="field coord-mgrs" hidden>DIP (MGRS) <input type="text" id="dipMgrs" spellcheck="false"></label>
+      <label class="field">Ensemble-Modell
+        <select id="model">
+          <option value="ecmwf_ifs025" selected>ECMWF ENS 0.25° (51 Member)</option>
+          <option value="ecmwf_aifs025">ECMWF AIFS ENS 0.25° (51 Member, KI)</option>
+          <option value="gfs05">GFS Ensemble 0.5° (31 Member)</option>
+          <option value="multi">Multi-Modell: IFS + AIFS + GFS (133 Member)</option>
+          <option value="det">Hauptläufe: bis 11 Modelle, det. (inkl. ICON-D2/EU)</option>
+        </select>
+      </label>
+      <div class="model-filter" id="modelFilter" hidden>
+        <span class="hint">Aktive Modelle:</span>
+        <div id="modelFilterList"></div>
+        <p class="hint" id="modelFilterHint"></p>
+      </div>
+
+      <h2>Einheiten</h2>
+      <div class="field-row">
+        <label>Höhen / Distanzen
+          <select id="unitAlt">
+            <option value="m" selected>Meter</option>
+            <option value="ft">Fuß (ft)</option>
+          </select>
+        </label>
+        <label>Geschwindigkeit
+          <select id="unitSpd">
+            <option value="ms" selected>m/s</option>
+            <option value="kt">Knoten (kt)</option>
+            <option value="kmh">km/h</option>
+          </select>
+        </label>
+      </div>
+      <label class="field">Koordinatenformat
+        <select id="coordFmt">
+          <option value="deg" selected>Dezimalgrad</option>
+          <option value="mgrs">MGRS</option>
+        </select>
+      </label>
+
+      <h2>Sprungprofil</h2>
+      <label class="field">Exithöhe über Grund (<span class="uAlt">m</span>) <input type="number" id="exitAGL" value="4000" min="500" max="8000" step="100"></label>
+      <label class="field">Öffnungshöhe über Grund (<span class="uAlt">m</span>) <input type="number" id="openAGL" value="1000" min="200" max="4000" step="100"></label>
+      <div class="field-row">
+        <label>Freifall (<span class="uSpd">m/s</span>) <input type="number" id="vFree" value="50" min="20" max="90" step="1"></label>
+        <label>Sinken (<span class="uSpd">m/s</span>) <input type="number" id="vCanopy" value="5" min="2" max="12" step="0.5"></label>
+      </div>
+      <div class="field-row">
+        <label>Vorwärtsfahrt Schirm (<span class="uSpd">m/s</span>) <input type="number" id="vFwd" value="10" min="2" max="25" step="0.5"></label>
+        <label>Überhöhung (<span class="uAlt">m</span>) <input type="number" id="margin" value="300" min="0" max="1000" step="50"></label>
+      </div>
+      <p class="hint">Korrigierbare Strecke R = Vorwärtsfahrt × (Öffnungshöhe − Überhöhung) / Sinkrate = <b id="rCalc">–</b></p>
+
+      <details class="info">
+        <summary>Ampel-Schwellen (meteorologisch)</summary>
+        <div class="field-row">
+          <label>distP90 grün ≤ (m) <input type="number" id="thrDistG" value="300" min="50" max="2000" step="50"></label>
+          <label>rot &gt; (m) <input type="number" id="thrDistR" value="700" min="100" max="5000" step="50"></label>
+        </div>
+        <div class="field-row">
+          <label>σ Richtung grün ≤ (°) <input type="number" id="thrDirG" value="15" min="1" max="90" step="1"></label>
+          <label>rot &gt; (°) <input type="number" id="thrDirR" value="30" min="5" max="180" step="1"></label>
+        </div>
+      </details>
+
+      <button id="loadBtn">Ensembledaten laden</button>
+      <p id="status" class="status"></p>
+
+      <details class="info">
+        <summary>Methodik</summary>
+        <p>Für jedes Ensemble-Member wird aus den Druckflächen-Winden (1000–400&nbsp;hPa, Höhenzuordnung über Geopotential) plus 10-m-Wind ein Vertikalprofil interpoliert. Daraus werden der vektorielle Mittelwind Boden–Exithöhe und der Windversatz eines Springers (Freifall- und Schirmphase) integriert.</p>
+        <p>Für jedes Member ergibt sich rückwärts vom DIP der nötige HARP E = DIP − Versatz. Um E liegt ein Exitkreis mit Radius R (Vorwärtsfahrt × nutzbare Schirmzeit; die Überhöhung über dem DIP bleibt als Höhenreserve unangetastet): Exit innerhalb ⇒ DIP mit diesem Member erreichbar. Die Karte zeigt, welcher Anteil der Member jeden Punkt überdeckt – die 90-%-Fläche ist die belastbare Exitzone. Der optimale HARP ist der Minimax-Punkt der Member-HARPs; um ihn liegt die garantierte Zone mit Radius R − r (r = Umkreis der HARPs).</p>
+        <p>Zwei Zuverlässigkeitsmaße: <b>Reserve-Verbrauch</b> = Versatz-Streuung (distP90) / R, also der Anteil der Schirm-Korrekturreserve, den die Wetterunsicherheit aufzehrt (operationell, färbt auch den Zeitstreifen). <b>Meteo-Spread</b> = absolute Streuung (distP90, σ Wind, σ Richtung) gegen einstellbare Schwellen, unabhängig von der Schirmleistung.</p>
+        <p>Im Multi-Modell-Betrieb (IFS + AIFS + GFS) werden alle 133 Member gleichberechtigt gepoolt; die Profilcharts färben die Member je Modell ein. Die Option „Hauptläufe“ bildet stattdessen ein Lagebild aus den deterministischen Läufen von bis zu 11 Modellen (je Modell ein Member) – kleines N, aber mit ICON-D2/EU und HARMONIE auch kilometerskalige Modelle.</p>
+        <p>Nur zur Lagebeurteilung – ersetzt keine offizielle Flugwetterberatung.</p>
+      </details>
+    </aside>
+
+    <section id="results" class="results" hidden>
+      <nav class="tabs">
+        <button class="tab active" data-tab="analyse">Analyse · Wetterberatung</button>
+        <button class="tab" data-tab="briefing">Briefing · Springer</button>
+      </nav>
+
+      <div id="tabAnalyse" class="tab-stack">
+        <div class="panel">
+          <div class="time-row">
+            <span class="time-label" id="timeLabel">–</span>
+            <input type="range" id="timeSlider" min="0" max="0" value="0">
+          </div>
+          <canvas id="qualityStrip" title="Reserve-Verbrauch je Stunde: grün = Wetterunsicherheit verbraucht wenig der Korrekturreserve, rot = Reserve aufgebraucht"></canvas>
+        </div>
+
+        <div class="panel score" id="scoreCard"></div>
+
+        <div class="chart-grid">
+          <div class="panel">
+            <h3>Windgeschwindigkeit über Höhe <span class="sub">alle Member, Mittel, 10–90&nbsp;%</span></h3>
+            <canvas id="chartSpeed" class="chart-tall"></canvas>
+          </div>
+          <div class="panel">
+            <h3>Windrichtung über Höhe <span class="sub">alle Member, zirkulares Mittel</span></h3>
+            <canvas id="chartDir" class="chart-tall"></canvas>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Mittelwind Boden–Exit im Zeitverlauf <span class="sub">Ensemble-Mittel und 10–90-%-Band, Klick wählt Termin</span></h3>
+          <canvas id="chartTime" class="chart-time"></canvas>
+        </div>
+
+        <div class="panel">
+          <h3>Exitzonen für den DIP <span class="sub">Wo muss der Exit erfolgen, damit der DIP erreichbar bleibt?</span></h3>
+          <div class="view-toggle">
+            <label><input type="radio" name="mapMode" value="zones" checked> Exitzonen (Member-Überdeckung)</label>
+            <label><input type="radio" name="mapMode" value="scatter"> Winddrift-Landepunkte (HARP = Ensemble-Mittel)</label>
+            <label><input type="radio" name="mapMode" value="plan"> Winddrift-Landepunkte (geplanter HARP)</label>
+          </div>
+          <div class="harp-row">
+            <label class="coord-deg">HARP Breite <input type="number" id="harpLatA" step="0.00001"></label>
+            <label class="coord-deg">HARP Länge <input type="number" id="harpLonA" step="0.00001"></label>
+            <label class="coord-mgrs" hidden>HARP (MGRS) <input type="text" id="harpMgrsA" spellcheck="false"></label>
+            <button id="glideA" title="HARP an den luvseitigen Rand der 90-%-Zone setzen (größte Gleitstrecke)">Max. Gleitstrecke</button>
+            <button id="resetA" title="HARP zurück auf den sichersten Punkt (Minimax)">Optimum</button>
+          </div>
+          <p class="hint" id="harpEvalA"></p>
+          <div class="legend" id="mapLegend"></div>
+          <div id="mapAnalysis"></div>
+          <p class="hint" id="mapInfo"></p>
+        </div>
+
+        <div class="panel">
+          <h3>Windschichtung nach Druckflächen</h3>
+          <div class="table-wrap"><table id="levelTable"></table></div>
+        </div>
+      </div>
+
+      <div id="tabBriefing" class="tab-stack" hidden>
+        <div class="panel brief-banner" id="briefBanner">
+          <p id="briefBannerText" class="hint"></p>
+          <button id="freezeBtn">Briefing fixieren</button>
+        </div>
+
+        <div class="panel" id="briefVerdict"></div>
+
+        <div class="panel">
+          <h3>Absetzkarte <span class="sub">Wo aussteigen, damit das Ziel erreichbar bleibt?</span></h3>
+          <div class="view-toggle">
+            <label><input type="radio" name="mapModeB" value="zones" checked> Exitzonen</label>
+            <label><input type="radio" name="mapModeB" value="plan"> Reine Winddrift – wohin trägt dich der Wind?</label>
+          </div>
+          <div class="harp-row">
+            <label class="coord-deg">HARP Breite <input type="number" id="harpLatB" step="0.00001"></label>
+            <label class="coord-deg">HARP Länge <input type="number" id="harpLonB" step="0.00001"></label>
+            <label class="coord-mgrs" hidden>HARP (MGRS) <input type="text" id="harpMgrsB" spellcheck="false"></label>
+            <button id="glideB" title="HARP an den luvseitigen Rand der 90-%-Zone setzen (größte Gleitstrecke)">Max. Gleitstrecke</button>
+            <button id="resetB" title="HARP zurück auf den sichersten Punkt (Minimax)">Optimum</button>
+          </div>
+          <p class="hint" id="harpEvalB"></p>
+          <div class="legend" id="briefLegend"></div>
+          <div id="mapBrief"></div>
+          <p class="hint" id="briefMapInfo"></p>
+        </div>
+
+        <div class="panel">
+          <h3>Wind gegen Schirmleistung <span class="sub">warum die Einschätzung so ausfällt</span></h3>
+          <canvas id="briefExplain"></canvas>
+          <div class="legend" id="briefExplainLegend"></div>
+          <p class="hint" id="briefExplainHint"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Daten: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo Ensemble API</a> (ECMWF ENS / NOAA GEFS) · Karte: OpenStreetMap · <a href="docs/METHODIK.md">Methodik-Dokumentation</a>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/vendor/mgrs.js"></script>
+  <script src="js/meteo.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
