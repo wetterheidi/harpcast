@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b95dd"/>
+      <stop offset="1" stop-color="#175a96"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#sky)"/>
+  <!-- Fangleinen -->
+  <g stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.9">
+    <line x1="13" y1="31" x2="32" y2="49"/>
+    <line x1="32" y1="34" x2="32" y2="49"/>
+    <line x1="51" y1="31" x2="32" y2="49"/>
+  </g>
+  <!-- Schirmkappe -->
+  <path fill="#ffffff" d="M10 30 a22 22 0 0 1 44 0 a7.4 6 0 0 1 -14.6 0 a7.4 6 0 0 1 -14.8 0 a7.4 6 0 0 1 -14.6 0 z"/>
+  <!-- Springer -->
+  <circle cx="32" cy="51.5" r="3.6" fill="#ffffff"/>
+</svg>
