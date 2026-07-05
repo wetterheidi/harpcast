@@ -88,6 +88,13 @@
     addBasemaps(m);
     return { map: m, layer: L.layerGroup().addTo(m) };
   }
+  // Ist das Ziel seit dem letzten Rendern dieser Karte gewandert (z. B. neuer
+  // DIP + Neuladen, während der andere Tab offen war)? Merkt sich das Zentrum.
+  function centerMoved(rm, c) {
+    const prev = rm.center;
+    rm.center = { lat: c.lat, lng: c.lng };
+    return !prev || Math.abs(prev.lat - c.lat) > 1e-6 || Math.abs(prev.lng - c.lng) > 1e-6;
+  }
 
   // --- Koordinatenformat (Dezimalgrad / MGRS) ------------------------------
   const coordFmt = () => $('coordFmt').value;
@@ -507,9 +514,11 @@
       map: mapA.map, layer: mapA.layer, center: marker.getLatLng(),
       legend: $('mapLegend'), info: $('mapInfo'),
     };
+    if (centerMoved(mapA, tgt.center)) fit = true;
     const hp = resolvedHarp(s, tgt.center);
     renderHarpUI('A', s, p, tgt.center, hp, false);
     const mode = mapMode();
+    if (fit && mode !== 'zones') mapA.map.setView([tgt.center.lat, tgt.center.lng]);
     if (mode === 'zones') renderZones(tgt, s, p, { fit, harp: { pos: hp, readonly: false } });
     else if (mode === 'scatter') renderScatter(tgt, s, p);
     else renderPlanScatter(tgt, s, p, hp, false);
@@ -866,7 +875,9 @@
       map: mapB.map, layer: mapB.layer, center: b.center,
       legend: $('briefLegend'), info: $('briefMapInfo'),
     };
+    if (centerMoved(mapB, b.center)) fit = true;
     const modeB = document.querySelector('input[name="mapModeB"]:checked').value;
+    if (fit && modeB !== 'zones') mapB.map.setView([b.center.lat, b.center.lng]);
     if (modeB === 'zones') {
       renderZones(tgt, b.s, b.p, { fit, briefing: true, harp: { pos: b.harp, readonly } });
     } else {
