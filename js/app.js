@@ -388,9 +388,10 @@
        <div class="score-block">
          <div class="badge ${metCls}"><span class="big">${fmtDist(s.distP90)}</span>Meteo-Spread</div>
          <div class="metrics">
-           ${metric(fmtWind({ dir: s.meanDir, spd: s.meanSpd }), 'Mittelwind Boden–Exit')}
-           ${metric(`± ${fmtSpd(s.sigmaSpd)}`, 'σ Geschwindigkeit')}
-           ${metric(`± ${Math.round(s.sigmaDir)}°`, 'σ Richtung (zirkular)')}
+           ${metric(fmtWind(s.canopy), 'Mittelwind Schirmfahrt (Öffnung–Überhöhung)')}
+           ${metric(`${fmtSpd(s.p10)} – ${fmtSpd(s.p90)}`, 'Geschwindigkeitsband Boden–Exit (P10–P90)')}
+           ${metric(`${String(Math.round(s.dirP10)).padStart(3, '0')}° – ${String(Math.round(s.dirP90)).padStart(3, '0')}°`,
+             'Richtungsband Boden–Exit (P10–P90)')}
            ${metric(`${s.n}`, 'gültige Member')}
          </div>
        </div>`;

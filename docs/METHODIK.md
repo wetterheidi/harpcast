@@ -220,8 +220,14 @@ Richtungen gleichverteilt, $\sigma_\theta$ läuft gegen die Kappung. Für
 kleine Streuungen stimmt $\sigma_\theta$ mit der linearen
 Standardabweichung überein.
 
-Angewandt auf: Richtung des Member-Mittelwinds (Score-Karte) und die
+Angewandt auf: Richtung des Member-Mittelwinds (Meteo-Ampel) und die
 Richtungen je Druckfläche (Tabelle).
+
+Auf der Score-Karte wird statt $\sigma_\theta$ das anschaulichere
+zirkulare **P10–P90-Richtungsband** angezeigt: Perzentile der kürzesten
+Winkelabweichung vom zirkularen Mittel, zurückgedreht auf absolute
+Richtungen. $\sigma_\theta$ bleibt das interne Kriterium der Meteo-Ampel
+(Abschn. 8.2).
 
 ### 7.3 Überdeckungsfeld der Exitzonen (`renderZones`)
 
@@ -246,7 +252,7 @@ kalibriertes Ensemble voraus – EPS sind besonders bei kurzen Vorlaufzeiten
 systematisch **unterdispersiv** (Spread < tatsächlicher Fehler), $P$ ist
 also tendenziell zu optimistisch.
 
-### 7.4 Minimax-HARP und garantierte Exitzone
+### 7.4 Minimax-HARP und sichere Exitzone
 
 Der **kleinste umschließende Kreis** (Welzl-Algorithmus, inkrementell;
 `enclosingCircle`) der HARPs liefert Zentrum $\vec c$ und Radius $r$.
@@ -260,7 +266,7 @@ nicht dominieren. (Hinweis: Dieses Trimmen ist eine Heuristik – es liefert
 nicht zwingend den kleinsten Kreis, der *irgendeine* 90-%-Teilmenge
 umschließt, sondern den über die zentrumsnächsten 90 %.)
 
-**Garantierte Zone** (Dreiecksungleichung): Liegen alle (behaltenen)
+**Sichere Zone** (Dreiecksungleichung): Liegen alle (behaltenen)
 $\vec E_m$ in $K(\vec c, r)$, dann gilt für jeden Exit
 $\vec x \in K(\vec c,\, R - r)$:
 
@@ -269,7 +275,7 @@ $$|\vec x - \vec E_m| \le |\vec x - \vec c| + |\vec c - \vec E_m| \le (R - r) + 
 Der Kreis $K(\vec c,\, R-r)$ ist also eine **Teilmenge** der echten
 Schnittfläche aller Exitkreise (die Schnittfläche selbst ist ein
 Linsen-Polygon und etwas größer) – die Garantie ist konservativ. Für
-$r \ge R$ existiert kein garantierter HARP → Warnung.
+$r \ge R$ existiert kein sicherer HARP → Warnung.
 
 **Geplanter HARP (frei wählbar):** Für einen beliebigen HARP $\vec x$
 (per Marker oder Koordinateneingabe, `harpEval`) bewertet das Tool den Plan
@@ -389,6 +395,13 @@ einstellbare Schwellen:
 Die Schwellen sind bewusst konfigurierbar – sie sind Konvention, keine
 Physik.
 
+**Anzeige vs. Ampelkriterium:** Die Score-Karte zeigt statt der σ-Werte
+die P10–P90-Bänder von Geschwindigkeit und Richtung des Mittelwinds
+Boden–Exit („in 80 % der Member liegt der Wind in diesem Bereich“) sowie
+als Mittelwind das Schirmfahrt-Segment (Öffnungshöhe bis Überhöhung, wie
+im Briefing). Die Ampel rechnet unverändert mit distP90 und
+$\sigma_\theta$.
+
 **Zusammenhang der beiden Maße:** distP90 ist die gemeinsame Basis; das
 operationelle Maß normiert sie auf das Schirmbudget, das meteorologische
 vergleicht sie absolut. Bei identischem Wetter kann derselbe Termin
@@ -459,6 +472,6 @@ Node-Skript gegen `js/meteo.js`) prüfen lassen:
 | $R$ | `p.tolerance` | Korrekturbudget des Schirms (Abschn. 6) |
 | distP90 | `distP90` | 90-%-Quantil von $\lvert\vec O_m\rvert$ |
 | $\vec c,\ r$ | `enc90` | Minimax-HARP und Umkreisradius (90 % Member) |
-| $R - r$ | `safeR` | Radius der garantierten Exitzone |
+| $R - r$ | `safeR` | Radius der sicheren Exitzone |
 | reserveUse | `reserveUse` | distP90 / R |
 | $\sigma_\theta$ | `circStats().sigma` | zirkulare Richtungsstreuung |

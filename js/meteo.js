@@ -212,6 +212,11 @@ const Meteo = (() => {
     const offsets = members.map(m => ({ x: m.dx - mdx, y: m.dy - mdy }));
     const dists = offsets.map(o => Math.hypot(o.x, o.y));
     const cs = circStats(dirs);
+    // zirkulares P10–P90-Richtungsband: Perzentile der (kürzesten) Abweichung
+    // vom zirkularen Mittel, zurückgedreht auf absolute Richtungen
+    const dirDevs = dirs.map(d => ((d - cs.mean + 540) % 360) - 180).sort((a, b) => a - b);
+    const dirP10 = (cs.mean + percentileSorted(dirDevs, 0.1) + 360) % 360;
+    const dirP90 = (cs.mean + percentileSorted(dirDevs, 0.9) + 360) % 360;
 
     // HARPs je Member (Offset vom DIP) und deren Minimax-Umkreis
     const exits = members.map(m => ({ x: -m.dx, y: -m.dy }));
@@ -239,6 +244,8 @@ const Meteo = (() => {
       p90: percentileSorted(sortedSpds, 0.9),
       meanDir: cs.mean,
       sigmaDir: cs.sigma,
+      dirP10,
+      dirP90,
       meanDrift: { x: mdx, y: mdy },
       offsets,
       exits,
