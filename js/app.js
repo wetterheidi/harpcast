@@ -6,7 +6,6 @@
 (() => {
 
   const $ = id => document.getElementById(id);
-  const KT = 1.94384;
 
   // Modelle mit Druckflächen-Ensembledaten; 'multi' poolt alle drei
   const MULTI_MODELS = 'ecmwf_ifs025,ecmwf_aifs025,gfs05';
@@ -138,10 +137,9 @@
     const v = ms * SPD_F[curSpd];
     return `${curSpd === 'ms' ? v.toFixed(1) : Math.round(v)} ${SPD_LBL[curSpd]}`;
   };
-  // Windangabe „Richtung / Geschwindigkeit“; kt-Zusatz nur, solange kt nicht Anzeigeeinheit ist
+  // Windangabe „Richtung / Geschwindigkeit“ in der gewählten Anzeigeeinheit
   const fmtWind = w => w
-    ? `${String(Math.round(w.dir)).padStart(3, '0')}° / ${fmtSpd(w.spd)}` +
-      (curSpd !== 'kt' ? ` (≈ ${Math.round(w.spd * SPD_F.kt)} kt)` : '')
+    ? `${String(Math.round(w.dir)).padStart(3, '0')}° / ${fmtSpd(w.spd)}`
     : '–';
 
   function switchUnits() {
@@ -383,7 +381,7 @@
          <div class="badge ${opCls}"><span class="big">${usePct}</span>Reserve-Verbrauch</div>
          <div class="metrics">
            ${metric(fmtDist(p.tolerance), 'korrigierbare Strecke R')}
-           ${metric(safeR > 0 ? fmtDist(safeR) : 'keine', 'garantierte Exitzone (≥ 90 % Member)')}
+           ${metric(safeR > 0 ? fmtDist(safeR) : 'keine', 'sichere Exitzone (≥ 90 % Member)')}
            ${metric(fmtDist(s.distP90), 'Versatz-Streuung distP90')}
          </div>
        </div>
@@ -603,7 +601,7 @@
     const safeR = R - s.enc90.r;
     if (safeR > 0) {
       L.circle(harpOpt, { radius: safeR, color: '#14507e', weight: 2, dashArray: '6 6', fill: false })
-        .bindTooltip('garantierte Exitzone (≥ 90 % der Member)').addTo(tgt.layer);
+        .bindTooltip('sichere Exitzone (≥ 90 % der Member)').addTo(tgt.layer);
     }
     L.circleMarker(harpOpt, { radius: 5, color: '#14507e', weight: 2, fillColor: '#14507e', fillOpacity: 1 })
       .bindTooltip('Optimaler HARP (Minimax)').addTo(tgt.layer);
@@ -620,7 +618,7 @@
       const drift = Math.hypot(s.meanDrift.x, s.meanDrift.y);
       const land = [hp.lat + s.meanDrift.y / mPerDegLat, hp.lng + s.meanDrift.x / mPerDegLon];
       drawArrow(tgt, [hp.lat, hp.lng], land, mPerDegLat, mPerDegLon, '#1c2733',
-        `mittlere Winddrift ≈ ${fmtDist(drift)}: ohne Steuern landest du etwa hier`);
+        `mittlere Winddrift ≈ ${fmtDist(drift)}: nur durch die Windverdriftung landest du etwa hier`);
       // Restlücke zum Ziel = Schirmfahrt aus eigener Fahrt
       const hxy = harpXY(c, hp);
       const needSteer = Math.hypot(hxy.x + s.meanDrift.x, hxy.y + s.meanDrift.y);
@@ -640,20 +638,20 @@
       legendChip('rgba(46,158,68,0.55)', '≥ 90 % der Member') +
       legendChip('rgba(224,164,34,0.55)', '70–90 %') +
       legendChip('rgba(209,64,58,0.45)', '50–70 %') +
-      legendChip('#14507e', 'optimaler HARP / garantierte Zone') +
+      legendChip('#14507e', 'optimaler HARP / sichere Zone') +
       (opts.harp ? legendChip('#7c3aed', 'geplanter HARP') : '');
     tgt.info.innerHTML = opts.briefing
       ? `Bester HARP (HARP, blauer Punkt): <b>${fmtDist(dist)}</b> in Richtung ` +
         `<b>${String(brg).padStart(3, '0')}°</b> vom Ziel. Grüne Fläche: Exit hier – und das Ziel bleibt ` +
         `nach fast allen Wettermodellen (≥ 90 %) erreichbar. Der Pfeil zeigt, wohin dich der Wind trägt. ` +
         (safeR > 0
-          ? `Blau gestrichelt: garantiert sichere Exitzone (Radius <b>${fmtDist(safeR)}</b>) – hier reicht die Schirmfahrt in jedem Wetterszenario.`
-          : `<span class="warn">Keine garantiert sichere Exitzone – bleib so nah wie möglich am HARP.</span>`)
+          ? `Blau gestrichelt: sichere Exitzone (Radius <b>${fmtDist(safeR)}</b>) – hier reicht die Schirmfahrt in jedem Wetterszenario.`
+          : `<span class="warn">Keine sichere Exitzone – bleib so nah wie möglich am HARP.</span>`)
       : `Exitkreis-Radius R = <b>${fmtDist(R)}</b> je Member. ` +
         `Optimaler HARP (Minimax) liegt <b>${fmtDist(dist)}</b> in Richtung <b>${String(brg).padStart(3, '0')}°</b> vom DIP. ` +
         (safeR > 0
           ? `Garantierte Exitzone (≥ 90 % der Member): Radius <b>${fmtDist(safeR)}</b> um den optimalen HARP.`
-          : '<span class="warn">Keine garantierte Exitzone – der Ensemble-Spread übersteigt die Korrekturreserve.</span>') +
+          : '<span class="warn">Keine sichere Exitzone – der Ensemble-Spread übersteigt die Korrekturreserve.</span>') +
         (maxCov < 0.999
           ? ` <span class="warn">Kein HARP wird von allen Membern gedeckt (max. ${Math.round(maxCov * 100)} %).</span>`
           : '') +
@@ -719,7 +717,7 @@
     const drift = Math.hypot(s.meanDrift.x, s.meanDrift.y);
     const landMean = [hp.lat + s.meanDrift.y / mPerDegLat, hp.lng + s.meanDrift.x / mPerDegLon];
     drawArrow(tgt, [hp.lat, hp.lng], landMean, mPerDegLat, mPerDegLon, '#1c2733',
-      `mittlere Winddrift ≈ ${fmtDist(drift)}: ohne Steuern landest du etwa hier`);
+      `mittlere Winddrift ≈ ${fmtDist(drift)}: nur durch die Windverdriftung landest du etwa hier`);
 
     // die verbleibende Lücke zum Ziel schließt die Vorwärtsfahrt des Schirms
     const needSteer = Math.hypot(xy.x + s.meanDrift.x, xy.y + s.meanDrift.y);
@@ -838,15 +836,16 @@
         ? `<p class="hint"><span class="warn">Nur ${s.n} Wettermodelle/Member verfügbar</span> – Aussage nur orientierend.</p>`
         : '') +
       `<div class="metrics facts">
-         ${metric(`${fmtAlt(p.exitAGL)} / ${fmtAlt(p.openAGL)}`, 'Exit- / Öffnungshöhe AGL')}
          ${metric(`≈ ${fmtDist(harpDist)} · Kurs ${String(course).padStart(3, '0')}°`, 'Entfernung HARP → Ziel')}
          ${metric(`≈ ${fmtDist(drift)} → ${String(driftDir).padStart(3, '0')}°`, 'Winddrift (passiv, ohne Schirmfahrt)')}
          ${metric(`≈ ${fmtDist(needSteer)}`, 'nötige Schirmfahrt zum Ziel (mittleres Szenario)')}
          ${metric(fmtDist(p.tolerance), 'Schirmreserve R')}
+         ${metric(safeR > 0 ? fmtDist(safeR) : 'keine', 'sichere Exitzone')}
+       </div>
+       <div class="metrics facts">
          ${metric(fmtWind(s.ff), 'Mittelwind Freifall')}
          ${metric(fmtWind(s.canopy), 'Mittelwind Schirmfahrt (Öffnung–Überhöhung)')}
          ${metric(fmtWind(s.ground), 'Bodenwind (10 m)')}
-         ${metric(safeR > 0 ? fmtDist(safeR) : 'keine', 'garantierte Exitzone')}
        </div>`;
   }
 
@@ -1000,6 +999,48 @@
     setLocation(pos.lat, pos.lng);
     map.setView([pos.lat, pos.lng]);
   });
+  // --- Einstellungen dauerhaft merken (localStorage) ---------------------
+  const PREF_KEY = 'harpcast.settings';
+  const PREF_NUM = ['exitAGL', 'openAGL', 'vFree', 'vCanopy', 'vFwd', 'margin',
+    'thrDistG', 'thrDistR', 'thrDirG', 'thrDirR'];
+
+  function savePrefs() {
+    const o = {
+      unitAlt: $('unitAlt').value, unitSpd: $('unitSpd').value,
+      coordFmt: $('coordFmt').value, model: $('model').value,
+      lat: $('lat').value, lon: $('lon').value,
+    };
+    for (const id of PREF_NUM) o[id] = $(id).value;
+    try { localStorage.setItem(PREF_KEY, JSON.stringify(o)); } catch (e) { /* z. B. Privatmodus */ }
+  }
+
+  function restorePrefs() {
+    let o = null;
+    try { o = JSON.parse(localStorage.getItem(PREF_KEY)); } catch (e) { /* ignorieren */ }
+    if (!o) return;
+    // Einheiten zuerst: switchUnits() rechnet die Defaultwerte um, danach
+    // überschreiben die gespeicherten Werte (bereits in diesen Einheiten)
+    if (o.unitAlt in ALT_F) $('unitAlt').value = o.unitAlt;
+    if (o.unitSpd in SPD_F) $('unitSpd').value = o.unitSpd;
+    switchUnits();
+    for (const id of PREF_NUM) {
+      if (o[id] !== '' && isFinite(+o[id])) $(id).value = o[id];
+    }
+    if ([...$('model').options].some(op => op.value === o.model)) $('model').value = o.model;
+    if (['deg', 'mgrs'].includes(o.coordFmt)) $('coordFmt').value = o.coordFmt;
+    const lat = +o.lat, lon = +o.lon;
+    if (isFinite(lat) && isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+      setLocation(lat, lon);
+      map.setView([lat, lon]);
+    }
+  }
+
+  window.addEventListener('pagehide', savePrefs);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') savePrefs();
+  });
+
+  restorePrefs();
   updateRLabel();
   applyCoordFmt();
 })();
