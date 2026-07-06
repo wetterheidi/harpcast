@@ -224,11 +224,13 @@ Standardabweichung überein.
 Angewandt auf: Richtung des Member-Mittelwinds (Meteo-Ampel) und die
 Richtungen je Druckfläche (Tabelle).
 
-Auf der Score-Karte wird statt $\sigma_\theta$ das anschaulichere
-zirkulare **P10–P90-Richtungsband** angezeigt: Perzentile der kürzesten
+In der Oberfläche wird statt $\sigma_\theta$ überall das anschaulichere
+zirkulare **P10–P90-Richtungsband** angezeigt (Score-Karte und
+Druckflächen-Tabelle, `windBand`): Perzentile der kürzesten
 Winkelabweichung vom zirkularen Mittel, zurückgedreht auf absolute
-Richtungen. $\sigma_\theta$ bleibt das interne Kriterium der Meteo-Ampel
-(Abschn. 8.2).
+Richtungen. Analog ersetzt das P10–P90-Betragsband die
+Standardabweichung der Geschwindigkeit. $\sigma_\theta$ bleibt das
+interne Kriterium der Meteo-Ampel (Abschn. 8.2).
 
 ### 7.3 Überdeckungsfeld der Exitzonen (`renderZones`)
 

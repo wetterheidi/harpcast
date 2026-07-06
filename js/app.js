@@ -311,6 +311,7 @@
 
   const metric = (val, lbl) =>
     `<div class="metric"><span class="val">${val}</span><span class="lbl">${lbl}</span></div>`;
+  const pad3 = d => String(Math.round(d)).padStart(3, '0');
 
   function renderAll(fitMap = false) {
     const p = params();
@@ -387,7 +388,6 @@
     }
 
     const w = s[windLayer];
-    const pad3 = d => String(Math.round(d)).padStart(3, '0');
 
     card.innerHTML =
       (s.lowN
@@ -775,12 +775,12 @@
     const dec = curSpd === 'ms' ? 1 : 0;
     const fmt = r =>
       `<tr><td>${r.label}</td><td>${Math.round(r.hMSL * aF)}</td><td>${Math.round(r.hAGL * aF)}</td>` +
-      `<td>${String(Math.round(r.dirMean)).padStart(3, '0')}° ± ${Math.round(r.dirSigma)}°</td>` +
-      `<td>${(r.spdMean * sF).toFixed(dec)} ± ${(r.spdSigma * sF).toFixed(dec)}</td>` +
+      `<td>${pad3(r.dir)}° (${pad3(r.dirP10)}°–${pad3(r.dirP90)}°)</td>` +
+      `<td>${(r.spd * sF).toFixed(dec)} (${(r.spdP10 * sF).toFixed(dec)}–${(r.spdP90 * sF).toFixed(dec)})</td>` +
       `<td>${(r.spdMin * sF).toFixed(dec)} – ${(r.spdMax * sF).toFixed(dec)}</td></tr>`;
     $('levelTable').innerHTML =
       `<tr><th>Fläche</th><th>Höhe MSL (${curAlt})</th><th>Höhe AGL (${curAlt})</th>` +
-      `<th>Richtung Ø ± σ</th><th>Wind Ø ± σ (${SPD_LBL[curSpd]})</th><th>Min – Max (${SPD_LBL[curSpd]})</th></tr>` +
+      `<th>Richtung Ø (P10–P90)</th><th>Wind Ø (P10–P90) (${SPD_LBL[curSpd]})</th><th>Min – Max (${SPD_LBL[curSpd]})</th></tr>` +
       rows.map(fmt).join('');
   }
 

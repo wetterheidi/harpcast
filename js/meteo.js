@@ -21,16 +21,30 @@ const Meteo = (() => {
   ];
 
   const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
-  const std = a => {
-    if (a.length < 2) return 0;
-    const m = mean(a);
-    return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1));
-  };
   const percentileSorted = (sorted, p) => {
     const i = p * (sorted.length - 1);
     const lo = Math.floor(i), hi = Math.ceil(i);
     return sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
   };
+
+  // Mittel und P10–P90-Bänder eines Windkollektivs: Betragsmittel und
+  // -perzentile, zirkulares Richtungsmittel samt Streuung; das Richtungsband
+  // über Perzentile der kürzesten Abweichung vom zirkularen Mittel,
+  // zurückgedreht auf absolute Richtungen
+  function windBand(spds, dirs) {
+    const cs = circStats(dirs);
+    const sorted = [...spds].sort((a, b) => a - b);
+    const devs = dirs.map(d => ((d - cs.mean + 540) % 360) - 180).sort((a, b) => a - b);
+    return {
+      spd: mean(spds),
+      dir: cs.mean,
+      dirSigma: cs.sigma,
+      spdP10: percentileSorted(sorted, 0.1),
+      spdP90: percentileSorted(sorted, 0.9),
+      dirP10: (cs.mean + percentileSorted(devs, 0.1) + 360) % 360,
+      dirP90: (cs.mean + percentileSorted(devs, 0.9) + 360) % 360,
+    };
+  }
 
   // Zirkulare Statistik über Richtungen in Grad (Mardia-Standardabweichung)
   function circStats(dirs) {
@@ -204,48 +218,34 @@ const Meteo = (() => {
     }
     if (members.length < MIN_MEMBERS) return null;
 
-    // Richtungsstreuung des Mittelwinds Boden–Exit → σ_θ (Meteo-Ampel)
-    const dirs = members.map(m => toSpdDir(m.mu, m.mv)[1]);
     const mdx = mean(members.map(m => m.dx));
     const mdy = mean(members.map(m => m.dy));
     const offsets = members.map(m => ({ x: m.dx - mdx, y: m.dy - mdy }));
     const dists = offsets.map(o => Math.hypot(o.x, o.y));
-    const cs = circStats(dirs);
 
     // HARPs je Member (Offset vom DIP) und deren Minimax-Umkreis
     const exits = members.map(m => ({ x: -m.dx, y: -m.dy }));
     const enc90 = robustEnclosing(exits, 0.9);
     const distP90 = percentileSorted([...dists].sort((a, b) => a - b), 0.9);
 
-    // Segment-Mittelwind über die Member (Betragsmittel, zirkulares
-    // Richtungsmittel) samt P10–P90-Bändern; das Richtungsband über
-    // Perzentile der kürzesten Abweichung vom zirkularen Mittel,
-    // zurückgedreht auf absolute Richtungen
+    // Segmentwind über die Member (Mittel + P10–P90-Bänder, s. windBand)
     const segWind = (uk, vk) => {
       const sel = members.filter(m => m[uk] != null);
       if (!sel.length) return null;
-      const sSpds = sel.map(m => Math.hypot(m[uk], m[vk]));
-      const sDirs = sel.map(m => toSpdDir(m[uk], m[vk])[1]);
-      const sCs = circStats(sDirs);
-      const sorted = [...sSpds].sort((a, b) => a - b);
-      const devs = sDirs.map(d => ((d - sCs.mean + 540) % 360) - 180).sort((a, b) => a - b);
-      return {
-        spd: mean(sSpds),
-        dir: sCs.mean,
-        spdP10: percentileSorted(sorted, 0.1),
-        spdP90: percentileSorted(sorted, 0.9),
-        dirP10: (sCs.mean + percentileSorted(devs, 0.1) + 360) % 360,
-        dirP90: (sCs.mean + percentileSorted(devs, 0.9) + 360) % 360,
-      };
+      return windBand(
+        sel.map(m => Math.hypot(m[uk], m[vk])),
+        sel.map(m => toSpdDir(m[uk], m[vk])[1]));
     };
+    const total = segWind('mu', 'mv');
 
     return {
       ff: segWind('ffu', 'ffv'),
       canopy: segWind('cau', 'cav'),
-      total: segWind('mu', 'mv'),
+      total,
       ground: groundWind(data, t),
       n: members.length,
-      sigmaDir: cs.sigma,
+      // σ_θ des Mittelwinds Boden–Exit → Kriterium der Meteo-Ampel
+      sigmaDir: total.dirSigma,
       meanDrift: { x: mdx, y: mdy },
       offsets,
       exits,
@@ -307,12 +307,10 @@ const Meteo = (() => {
       const hMSL = ghKey ? mean(ghs) : data.elevation + 10;
       const hAGL = hMSL - data.elevation;
       if (ghKey && (hAGL < 20 || hAGL > p.exitAGL + 1500)) return;
-      const cs = circStats(dirs);
       rows.push({
         label,
         hMSL, hAGL,
-        dirMean: cs.mean, dirSigma: cs.sigma,
-        spdMean: mean(spds), spdSigma: std(spds),
+        ...windBand(spds, dirs),
         spdMin: Math.min(...spds), spdMax: Math.max(...spds),
       });
     };
