@@ -344,6 +344,15 @@
     renderAll();
   }
 
+  // wählbare Windschicht für die Meteo-Spread-Kennzahlen der Scorecard;
+  // Mittelwind und Streubänder beziehen sich immer auf dieselbe Schicht
+  const WIND_LAYERS = {
+    canopy: 'Schirmfahrt (Öffnung–Überhöhung)',
+    ff: 'Freifall (Exit–Öffnung)',
+    total: 'gesamt (Boden–Exit)',
+  };
+  let windLayer = 'canopy';
+
   function renderScore(s, p) {
     const card = $('scoreCard');
     if (!s) {
@@ -371,6 +380,9 @@
       if (metCls === 'green') metCls = 'amber';
     }
 
+    const w = s[windLayer];
+    const pad3 = d => String(Math.round(d)).padStart(3, '0');
+
     card.innerHTML =
       (s.lowN
         ? `<p class="hint"><span class="warn">Nur ${s.n} Member verfügbar</span> – alle Maße sind ` +
@@ -388,13 +400,22 @@
        <div class="score-block">
          <div class="badge ${metCls}"><span class="big">${fmtDist(s.distP90)}</span>Meteo-Spread</div>
          <div class="metrics">
-           ${metric(fmtWind(s.canopy), 'Mittelwind Schirmfahrt (Öffnung–Überhöhung)')}
-           ${metric(`${fmtSpd(s.p10)} – ${fmtSpd(s.p90)}`, 'Geschwindigkeitsband Boden–Exit (P10–P90)')}
-           ${metric(`${String(Math.round(s.dirP10)).padStart(3, '0')}° – ${String(Math.round(s.dirP90)).padStart(3, '0')}°`,
-             'Richtungsband Boden–Exit (P10–P90)')}
+           ${metric(fmtWind(w), `Mittelwind ${WIND_LAYERS[windLayer]}`)}
+           ${metric(w ? `${fmtSpd(w.spdP10)} – ${fmtSpd(w.spdP90)}` : '–', 'Geschwindigkeitsband (P10–P90)')}
+           ${metric(w ? `${pad3(w.dirP10)}° – ${pad3(w.dirP90)}°` : '–', 'Richtungsband (P10–P90)')}
            ${metric(`${s.n}`, 'gültige Member')}
          </div>
+         <label class="layer-pick">Windschicht
+           <select id="windLayer">
+             ${Object.entries(WIND_LAYERS).map(([k, lbl]) =>
+               `<option value="${k}" ${k === windLayer ? 'selected' : ''}>${lbl}</option>`).join('')}
+           </select>
+         </label>
        </div>`;
+    $('windLayer').addEventListener('change', e => {
+      windLayer = e.target.value;
+      renderScore(s, p);
+    });
   }
 
   // --- Kartendarstellung: Exitzonen bzw. Landepunktwolke ----------------
@@ -1010,6 +1031,7 @@
       unitAlt: $('unitAlt').value, unitSpd: $('unitSpd').value,
       coordFmt: $('coordFmt').value, model: $('model').value,
       lat: $('lat').value, lon: $('lon').value,
+      windLayer,
     };
     for (const id of PREF_NUM) o[id] = $(id).value;
     try { localStorage.setItem(PREF_KEY, JSON.stringify(o)); } catch (e) { /* z. B. Privatmodus */ }
@@ -1029,6 +1051,7 @@
     }
     if ([...$('model').options].some(op => op.value === o.model)) $('model').value = o.model;
     if (['deg', 'mgrs'].includes(o.coordFmt)) $('coordFmt').value = o.coordFmt;
+    if (o.windLayer in WIND_LAYERS) windLayer = o.windLayer;
     const lat = +o.lat, lon = +o.lon;
     if (isFinite(lat) && isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
       setLocation(lat, lon);

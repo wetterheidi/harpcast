@@ -166,6 +166,8 @@ button:disabled { background: var(--muted); cursor: wait; }
 .badge .big { font-size: 1.6rem; display: block; }
 
 .metrics { display: flex; gap: 26px; flex-wrap: wrap; }
+.layer-pick { margin-left: auto; font-size: 0.78rem; color: var(--muted); }
+.layer-pick select { width: auto; display: block; margin-top: 3px; }
 .metric .val { font-size: 1.15rem; font-weight: 700; display: block; }
 .metric .lbl { font-size: 0.75rem; color: var(--muted); }
 

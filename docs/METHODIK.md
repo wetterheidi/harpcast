@@ -396,11 +396,13 @@ Die Schwellen sind bewusst konfigurierbar – sie sind Konvention, keine
 Physik.
 
 **Anzeige vs. Ampelkriterium:** Die Score-Karte zeigt statt der σ-Werte
-die P10–P90-Bänder von Geschwindigkeit und Richtung des Mittelwinds
-Boden–Exit („in 80 % der Member liegt der Wind in diesem Bereich“) sowie
-als Mittelwind das Schirmfahrt-Segment (Öffnungshöhe bis Überhöhung, wie
-im Briefing). Die Ampel rechnet unverändert mit distP90 und
-$\sigma_\theta$.
+die P10–P90-Bänder von Geschwindigkeit und Richtung („in 80 % der Member
+liegt der Wind in diesem Bereich“). Mittelwind und beide Bänder beziehen
+sich stets auf **dieselbe wählbare Windschicht** (Auswahl „Windschicht“
+auf der Karte): Schirmfahrt (Öffnungshöhe bis Überhöhung, Default),
+Freifall (Exit bis Öffnung) oder gesamt (Boden–Exit). Die Ampel rechnet
+unverändert mit distP90 und $\sigma_\theta$ über den Mittelwind
+Boden–Exit.
 
 **Zusammenhang der beiden Maße:** distP90 ist die gemeinsame Basis; das
 operationelle Maß normiert sie auf das Schirmbudget, das meteorologische
