@@ -119,9 +119,10 @@
   const ALT_F = { m: 1, ft: 3.28084 };
   const SPD_F = { ms: 1, kt: 1.94384, kmh: 3.6 };
   const SPD_LBL = { ms: 'm/s', kt: 'kt', kmh: 'km/h' };
-  // Grenzen der Sprungprofil-Felder, metrisch definiert
+  // Grenzen der Sprungprofil-Felder, metrisch definiert; Vertikal-
+  // geschwindigkeiten (Freifall, Sinken) bleiben immer in m/s
   const ALT_INPUTS = { exitAGL: [500, 8000], openAGL: [200, 4000], margin: [0, 1000] };
-  const SPD_INPUTS = { vFree: [20, 90], vCanopy: [2, 12], vFwd: [2, 25] };
+  const SPD_INPUTS = { vFwd: [2, 25] };
   // Einheit, in der die Eingabefelder aktuell beschriftet/gefüllt sind
   let curAlt = 'm', curSpd = 'ms';
 
@@ -221,12 +222,12 @@
     const p = {
       exitAGL: +$('exitAGL').value / aF,
       openAGL: +$('openAGL').value / aF,
-      vFree: +$('vFree').value / sF,
-      vCanopy: +$('vCanopy').value / sF,
+      vFree: +$('vFree').value,     // vertikal, immer m/s
+      vCanopy: +$('vCanopy').value, // vertikal, immer m/s
       vFwd: +$('vFwd').value / sF,
       margin: +$('margin').value / aF,
     };
-    // korrigierbare Strecke: Eigenfahrt des Schirms über die nutzbare Schirmzeit;
+    // maximale Schirmfahrt: Eigenfahrt des Schirms über die nutzbare Schirmzeit;
     // die Überhöhung (Höhenreserve über dem DIP, z. B. Landevolte) ist nicht nutzbar
     p.tolerance = Math.max(0, p.vFwd * Math.max(0, p.openAGL - p.margin) / p.vCanopy);
     return p;
@@ -398,7 +399,7 @@
       `<div class="score-block">
          <div class="badge ${opCls}"><span class="big">${usePct}</span>Reserve-Verbrauch</div>
          <div class="metrics">
-           ${metric(fmtDist(p.tolerance), 'korrigierbare Strecke R')}
+           ${metric(fmtDist(p.tolerance), 'maximale Schirmfahrt R')}
            ${metric(safeR > 0 ? fmtDist(safeR) : 'keine', 'sichere Exitzone (≥ 90 % Member)')}
            ${metric(fmtDist(s.distP90), 'Versatz-Streuung distP90')}
          </div>
@@ -653,7 +654,7 @@
       const needSteer = Math.hypot(hxy.x + s.meanDrift.x, hxy.y + s.meanDrift.y);
       if (needSteer > 30) {
         drawArrow(tgt, land, [c.lat, c.lng], mPerDegLat, mPerDegLon, '#2e9e44',
-          `Schirmfahrt: ≈ ${fmtDist(needSteer)} fliegst du aus eigener Fahrt zum Ziel (Reserve: ${fmtDist(R)})`);
+          `Schirmfahrt: ≈ ${fmtDist(needSteer)} fliegst du aus eigener Fahrt zum Ziel (maximale Schirmfahrt: ${fmtDist(R)})`);
       }
     } else if (!opts.briefing) {
       L.polyline([[c.lat, c.lng], harpOpt], { color: '#475569', weight: 1.5, dashArray: '4 5' }).addTo(tgt.layer);
@@ -680,7 +681,7 @@
         `Optimaler HARP (Minimax) liegt <b>${fmtDist(dist)}</b> in Richtung <b>${String(brg).padStart(3, '0')}°</b> vom DIP. ` +
         (safeR > 0
           ? `Garantierte Exitzone (≥ 90 % der Member): Radius <b>${fmtDist(safeR)}</b> um den optimalen HARP.`
-          : '<span class="warn">Keine sichere Exitzone – der Ensemble-Spread übersteigt die Korrekturreserve.</span>') +
+          : '<span class="warn">Keine sichere Exitzone – der Ensemble-Spread übersteigt die maximale Schirmfahrt.</span>') +
         (maxCov < 0.999
           ? ` <span class="warn">Kein HARP wird von allen Membern gedeckt (max. ${Math.round(maxCov * 100)} %).</span>`
           : '') +
@@ -712,7 +713,7 @@
       legendChip('#d1403a', 'außerhalb');
     tgt.info.innerHTML =
       `HARP auf dem Ensemble-Mittel geplant: <b>${inTol} von ${s.n} Membern (${Math.round(s.pTol * 100)} %)</b> ` +
-      `innerhalb der korrigierbaren Strecke R = ${fmtDist(p.tolerance)}, ` +
+      `innerhalb der maximalen Schirmfahrt R = ${fmtDist(p.tolerance)}, ` +
       `90 % der Member näher als <b>${fmtDist(s.distP90)}</b> am Ziel.`;
   }
 
@@ -728,7 +729,7 @@
     L.circle([c.lat, c.lng], {
       radius: R, color: '#2e9e44', weight: 1.5,
       fillColor: '#2e9e44', fillOpacity: 0.06,
-    }).bindTooltip('Schirmreserve R um das Ziel').addTo(tgt.layer);
+    }).bindTooltip('maximale Schirmfahrt R um das Ziel').addTo(tgt.layer);
 
     let inR = 0;
     for (const e of s.exits) {
@@ -752,7 +753,7 @@
     const needSteer = Math.hypot(xy.x + s.meanDrift.x, xy.y + s.meanDrift.y);
     if (needSteer > 30) {
       drawArrow(tgt, landMean, [c.lat, c.lng], mPerDegLat, mPerDegLon, '#2e9e44',
-        `Schirmfahrt: ≈ ${fmtDist(needSteer)} fliegst du aus eigener Fahrt zum Ziel (Reserve: ${fmtDist(R)})`);
+        `Schirmfahrt: ≈ ${fmtDist(needSteer)} fliegst du aus eigener Fahrt zum Ziel (maximale Schirmfahrt: ${fmtDist(R)})`);
     }
 
     tgt.legend.innerHTML =
@@ -765,8 +766,8 @@
       `Passive Landepunkte aller ${s.n} Member für einen Exit am geplanten HARP – also dort, wo du ` +
       `<b>als Rundkappe</b> ankämst. Die Punkte liegen bewusst nicht am Ziel: Die restliche Strecke ` +
       `(grüner Pfeil, ≈ <b>${fmtDist(needSteer)}</b>) fliegst du mit der Vorwärtsfahrt des Schirms. ` +
-      `<b>${inR} von ${s.n} (${Math.round(inR / s.n * 100)} %)</b> der Landepunkte liegen innerhalb der Schirmreserve ` +
-      `R = ${fmtDist(R)} um das Ziel – nur in diesen Szenarien reicht die Schirmfahrt bis zum DIP.`;
+      `<b>${inR} von ${s.n} (${Math.round(inR / s.n * 100)} %)</b> der Landepunkte liegen innerhalb der maximalen ` +
+      `Schirmfahrt R = ${fmtDist(R)} um das Ziel – nur in diesen Szenarien reicht die Schirmfahrt bis zum DIP.`;
   }
 
   function renderTable(p) {
@@ -835,7 +836,7 @@
 
     const pctM = `${ev.hit} von ${ev.n} Wettermodellen`;
     const sentence = p.tolerance <= 0
-      ? '<b>Nicht planbar.</b> Mit diesen Schirmwerten bleibt keine Korrekturreserve (R = 0).'
+      ? '<b>Nicht planbar.</b> Mit diesen Schirmwerten ist keine Schirmfahrt möglich (R = 0).'
       : cls === 'green'
         ? `<b>Sprung planbar.</b> Vom geplanten HARP erreichen ${pctM} das Ziel` +
           (ev.worst > 0
@@ -855,6 +856,8 @@
     // erwarteter passiver Landepunkt = HARP + mittlere Drift; die Lücke zum
     // Ziel muss die Vorwärtsfahrt des Schirms schließen
     const needSteer = Math.hypot(xy.x + s.meanDrift.x, xy.y + s.meanDrift.y);
+    // echte Reserve: was von der Reichweite nach der nötigen Schirmfahrt übrig bleibt
+    const reserve = p.tolerance - needSteer;
 
     card.innerHTML =
       `<div class="verdict">
@@ -868,7 +871,9 @@
          ${metric(`≈ ${fmtDist(harpDist)} · Kurs ${String(course).padStart(3, '0')}°`, 'Entfernung HARP → Ziel')}
          ${metric(`≈ ${fmtDist(drift)} → ${String(driftDir).padStart(3, '0')}°`, 'Winddrift (passiv, ohne Schirmfahrt)')}
          ${metric(`≈ ${fmtDist(needSteer)}`, 'nötige Schirmfahrt zum Ziel (mittleres Szenario)')}
-         ${metric(fmtDist(p.tolerance), 'Schirmreserve R')}
+         ${metric(fmtDist(p.tolerance), 'maximale Schirmfahrt R (bei Windstille)')}
+         ${metric(reserve >= 0 ? `≈ ${fmtDist(reserve)}` : `<span class="warn">≈ −${fmtDist(-reserve)}</span>`,
+           'Reserve (Reichweite − nötige Schirmfahrt)')}
          ${metric(safeR > 0 ? fmtDist(safeR) : 'keine', 'sichere Exitzone')}
        </div>
        <div class="metrics facts">
@@ -916,7 +921,7 @@
     $('briefExplainLegend').innerHTML =
       legendChip('rgba(29,111,184,0.8)', 'Drift vom Schirm ausgleichbar') +
       legendChip('rgba(209,64,58,0.85)', 'Drift zu groß für den Schirm') +
-      legendChip('rgba(46,158,68,0.5)', `Schirmreserve R = ${fmtDist(b.p.tolerance)}`);
+      legendChip('rgba(46,158,68,0.5)', `maximale Schirmfahrt R = ${fmtDist(b.p.tolerance)}`);
     $('briefExplainHint').innerHTML =
       `Jeder Punkt zeigt, wo dich der Wind nach Rechnung <b>eines</b> der ${b.s.n} Wettermodelle absetzen würde, ` +
       `wenn du am empfohlenen HARP aussteigst und nicht steuerst. Der grüne Kreis ist die Strecke, ` +
@@ -1054,7 +1059,12 @@
     if (o.unitSpd in SPD_F) $('unitSpd').value = o.unitSpd;
     switchUnits();
     for (const id of PREF_NUM) {
-      if (o[id] !== '' && isFinite(+o[id])) $(id).value = o[id];
+      const el = $(id), v = +o[id];
+      if (o[id] === '' || !isFinite(v)) continue;
+      // Werte außerhalb der Feldgrenzen verwerfen (z. B. Prefs, die noch
+      // in einer anderen Einheit gespeichert wurden)
+      if (v < +el.min || v > +el.max) continue;
+      el.value = o[id];
     }
     if ([...$('model').options].some(op => op.value === o.model)) $('model').value = o.model;
     if (['deg', 'mgrs'].includes(o.coordFmt)) $('coordFmt').value = o.coordFmt;

@@ -180,6 +180,13 @@ $$\boxed{\;R = v_{\mathrm{fwd}} \cdot \frac{h_{\mathrm{open}} - h_{\mathrm{über
 (implementiert in `params()`, `js/app.js`; negativ geklemmt auf 0).
 Default: $10 \cdot (1000-300)/5 = 1400\,$m.
 
+**Terminologie in der Oberfläche:** $R$ wird als **maximale Schirmfahrt
+(bei Windstille)** bezeichnet – die Strecke, die der Schirm aus
+Eigenfahrt zurücklegen kann. Die im Briefing ausgewiesene **Reserve** ist
+$R$ minus der nötigen Schirmfahrt zum Ziel (mittleres Szenario);
+methodisch dient $R$ als Korrekturbudget gegen die Ensemble-Streuung
+(Abschn. 8).
+
 **Exitkreis:** Member $m$ erlaubt das Erreichen des DIP genau dann, wenn
 
 $$|\,\text{Exit} + \vec D_m - \text{DIP}\,| \le R \quad\Longleftrightarrow\quad \text{Exit} \in K(\vec E_m,\, R)$$
@@ -475,7 +482,7 @@ Node-Skript gegen `js/meteo.js`) prüfen lassen:
 | $\vec{\bar V}_m$ | `mu`, `mv` | höhengemittelter Wind Boden–Exit |
 | $\vec O_m$ | `offsets` | $\vec D_m - \vec{\bar D}$ (Landepunktabweichung) |
 | $\vec E_m$ | `exits` | nötiger HARP $= \text{DIP} - \vec D_m$ |
-| $R$ | `p.tolerance` | Korrekturbudget des Schirms (Abschn. 6) |
+| $R$ | `p.tolerance` | maximale Schirmfahrt / Korrekturbudget (Abschn. 6) |
 | distP90 | `distP90` | 90-%-Quantil von $\lvert\vec O_m\rvert$ |
 | $\vec c,\ r$ | `enc90` | Minimax-HARP und Umkreisradius (90 % Member) |
 | $R - r$ | `safeR` | Radius der sicheren Exitzone |

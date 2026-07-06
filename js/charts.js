@@ -299,7 +299,7 @@ const Charts = (() => {
     ctx.fillText('Ziel (DIP)', cx, cy + 22);
     if (R * sc > 50) {
       ctx.fillStyle = C.green;
-      ctx.fillText(`Schirmreserve R = ${Math.round(R * u.altF)} ${u.altLbl}`, cx, cy - R * sc - 8);
+      ctx.fillText(`maximale Schirmfahrt R = ${Math.round(R * u.altF)} ${u.altLbl}`, cx, cy - R * sc - 8);
     }
 
     // Maßstabsbalken unten links (in der Anzeigeeinheit)

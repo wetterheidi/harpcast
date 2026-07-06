@@ -69,14 +69,14 @@
       <label class="field">Exithöhe über Grund (<span class="uAlt">m</span>) <input type="number" id="exitAGL" value="4000" min="500" max="8000" step="100"></label>
       <label class="field">Öffnungshöhe über Grund (<span class="uAlt">m</span>) <input type="number" id="openAGL" value="3000" min="200" max="4000" step="100"></label>
       <div class="field-row">
-        <label>Freifall (<span class="uSpd">m/s</span>) <input type="number" id="vFree" value="50" min="20" max="90" step="1"></label>
-        <label>Sinken (<span class="uSpd">m/s</span>) <input type="number" id="vCanopy" value="5" min="2" max="12" step="0.5"></label>
+        <label>Freifall (m/s) <input type="number" id="vFree" value="50" min="20" max="90" step="1"></label>
+        <label>Sinken (m/s) <input type="number" id="vCanopy" value="5" min="2" max="12" step="0.5"></label>
       </div>
       <div class="field-row">
         <label>Vorwärtsfahrt Schirm (<span class="uSpd">m/s</span>) <input type="number" id="vFwd" value="10" min="2" max="25" step="0.5"></label>
         <label>Überhöhung (<span class="uAlt">m</span>) <input type="number" id="margin" value="300" min="0" max="1000" step="50"></label>
       </div>
-      <p class="hint">Korrigierbare Strecke R = Vorwärtsfahrt × (Öffnungshöhe − Überhöhung) / Sinkrate = <b id="rCalc">–</b></p>
+      <p class="hint">Maximale Schirmfahrt R = Vorwärtsfahrt × (Öffnungshöhe − Überhöhung) / Sinkrate = <b id="rCalc">–</b></p>
 
       <details class="info">
         <summary>Ampel-Schwellen (meteorologisch)</summary>
@@ -97,7 +97,7 @@
         <summary>Methodik</summary>
         <p>Für jedes Ensemble-Member wird aus den Druckflächen-Winden (1000–400&nbsp;hPa, Höhenzuordnung über Geopotential) plus 10-m-Wind ein Vertikalprofil interpoliert. Daraus werden der vektorielle Mittelwind Boden–Exithöhe und der Windversatz eines Springers (Freifall- und Schirmphase) integriert.</p>
         <p>Für jedes Member ergibt sich rückwärts vom DIP der nötige HARP E = DIP − Versatz. Um E liegt ein Exitkreis mit Radius R (Vorwärtsfahrt × nutzbare Schirmzeit; die Überhöhung über dem DIP bleibt als Höhenreserve unangetastet): Exit innerhalb ⇒ DIP mit diesem Member erreichbar. Die Karte zeigt, welcher Anteil der Member jeden Punkt überdeckt – die 90-%-Fläche ist die belastbare Exitzone. Der optimale HARP ist der Minimax-Punkt der Member-HARPs; um ihn liegt die sichere Zone mit Radius R − r (r = Umkreis der HARPs).</p>
-        <p>Zwei Zuverlässigkeitsmaße: <b>Reserve-Verbrauch</b> = Versatz-Streuung (distP90) / R, also der Anteil der Schirm-Korrekturreserve, den die Wetterunsicherheit aufzehrt (operationell, färbt auch den Zeitstreifen). <b>Meteo-Spread</b> = absolute Streuung (distP90, σ Wind, σ Richtung) gegen einstellbare Schwellen, unabhängig von der Schirmleistung.</p>
+        <p>Zwei Zuverlässigkeitsmaße: <b>Reserve-Verbrauch</b> = Versatz-Streuung (distP90) / R, also der Anteil der maximalen Schirmfahrt R, den die Wetterunsicherheit aufzehrt (operationell, färbt auch den Zeitstreifen). <b>Meteo-Spread</b> = absolute Streuung (distP90, Richtungsstreuung) gegen einstellbare Schwellen, unabhängig von der Schirmleistung.</p>
         <p>Im Multi-Modell-Betrieb (IFS + AIFS + GFS) werden alle 133 Member gleichberechtigt gepoolt; die Profilcharts färben die Member je Modell ein. Die Option „Hauptläufe“ bildet stattdessen ein Lagebild aus den deterministischen Läufen von bis zu 11 Modellen (je Modell ein Member) – kleines N, aber mit ICON-D2/EU und HARMONIE auch kilometerskalige Modelle.</p>
         <p>Nur zur Lagebeurteilung – ersetzt keine offizielle Flugwetterberatung.</p>
       </details>
