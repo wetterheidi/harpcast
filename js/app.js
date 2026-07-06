@@ -329,13 +329,19 @@
       Charts.speedProfile($('chartSpeed'), prof, unitCtx());
       Charts.dirProfile($('chartDir'), prof, unitCtx());
     }
-    const tsMap = Charts.timeSeries($('chartTime'), state.data.times, state.stats, state.t, unitCtx());
-    $('chartTime').onclick = e => selectHour(tsMap(e.offsetX));
+    renderTimeChart();
     const stripMap = Charts.qualityStrip($('qualityStrip'), state.stats, state.t);
     $('qualityStrip').onclick = e => selectHour(stripMap(e.offsetX));
 
     // Briefing spiegelt live (sofern nicht fixiert und gerade sichtbar)
     if (state.tab === 'briefing') renderBriefing();
+  }
+
+  // Zeitverlaufs-Chart samt Überschrift, folgt der gewählten Windschicht
+  function renderTimeChart() {
+    $('tsLayerLbl').textContent = WIND_LAYERS[windLayer];
+    const tsMap = Charts.timeSeries($('chartTime'), state.data.times, state.stats, state.t, unitCtx(), windLayer);
+    $('chartTime').onclick = e => selectHour(tsMap(e.offsetX));
   }
 
   function selectHour(t) {
@@ -415,6 +421,7 @@
     $('windLayer').addEventListener('change', e => {
       windLayer = e.target.value;
       renderScore(s, p);
+      renderTimeChart();
     });
   }
 

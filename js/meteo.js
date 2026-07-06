@@ -204,9 +204,8 @@ const Meteo = (() => {
     }
     if (members.length < MIN_MEMBERS) return null;
 
-    const spds = members.map(m => Math.hypot(m.mu, m.mv));
+    // Richtungsstreuung des Mittelwinds Boden–Exit → σ_θ (Meteo-Ampel)
     const dirs = members.map(m => toSpdDir(m.mu, m.mv)[1]);
-    const sortedSpds = [...spds].sort((a, b) => a - b);
     const mdx = mean(members.map(m => m.dx));
     const mdy = mean(members.map(m => m.dy));
     const offsets = members.map(m => ({ x: m.dx - mdx, y: m.dy - mdy }));
@@ -246,11 +245,6 @@ const Meteo = (() => {
       total: segWind('mu', 'mv'),
       ground: groundWind(data, t),
       n: members.length,
-      meanSpd: mean(spds),
-      sigmaSpd: std(spds),
-      p10: percentileSorted(sortedSpds, 0.1),
-      p90: percentileSorted(sortedSpds, 0.9),
-      meanDir: cs.mean,
       sigmaDir: cs.sigma,
       meanDrift: { x: mdx, y: mdy },
       offsets,

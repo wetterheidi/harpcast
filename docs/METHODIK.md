@@ -195,15 +195,16 @@ Driftlandepunkt*, nicht relativ zum Boden.
 
 ### 7.1 Skalare Streuungsmaße (`hourStats`)
 
-Über die $N$ gültigen Member (Mittelwind-Beträge $s_m = |\vec{\bar V}_m|$):
+Über die $N$ gültigen Member:
 
-- Mittel $\bar s$, Stichproben-Standardabweichung
-  $\sigma_s = \sqrt{\tfrac{1}{N-1}\sum (s_m - \bar s)^2}$
-- Perzentile $P_{10}, P_{90}$ mit linearer Interpolation zwischen
-  Rangplätzen (Positionsindex $p\,(N-1)$)
 - **distP90** $= P_{90}\big(|\vec O_m|\big)$: 90-%-Quantil der
   Versatzabweichungen vom Ensemble-Mittel – die zentrale Streuungskennzahl
-  (Einheit: Meter am Boden).
+  (Einheit: Meter am Boden). Perzentile durchgängig mit linearer
+  Interpolation zwischen Rangplätzen (Positionsindex $p\,(N-1)$).
+- **Segmentwinde** (`segWind`) je Windschicht – Freifall (Exit–Öffnung),
+  Schirmfahrt (Öffnung–Überhöhung) und gesamt (Boden–Exit): Betragsmittel
+  $\bar s$, zirkulares Richtungsmittel (Abschn. 7.2) sowie die
+  **P10–P90-Bänder** von Betrag und Richtung über die Member.
 
 ### 7.2 Zirkulare Richtungsstatistik (`circStats`)
 
@@ -400,9 +401,10 @@ die P10–P90-Bänder von Geschwindigkeit und Richtung („in 80 % der Member
 liegt der Wind in diesem Bereich“). Mittelwind und beide Bänder beziehen
 sich stets auf **dieselbe wählbare Windschicht** (Auswahl „Windschicht“
 auf der Karte): Schirmfahrt (Öffnungshöhe bis Überhöhung, Default),
-Freifall (Exit bis Öffnung) oder gesamt (Boden–Exit). Die Ampel rechnet
-unverändert mit distP90 und $\sigma_\theta$ über den Mittelwind
-Boden–Exit.
+Freifall (Exit bis Öffnung) oder gesamt (Boden–Exit). Auch der Chart
+„Mittelwind im Zeitverlauf“ (Ensemble-Mittel und P10–P90-Band) folgt der
+gewählten Schicht. Die Ampel rechnet unverändert mit distP90 und
+$\sigma_\theta$ über den Mittelwind Boden–Exit.
 
 **Zusammenhang der beiden Maße:** distP90 ist die gemeinsame Basis; das
 operationelle Maß normiert sie auf das Schirmbudget, das meteorologische

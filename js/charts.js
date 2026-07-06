@@ -172,12 +172,14 @@ const Charts = (() => {
   }
 
   // Zeitreihe des Mittelwinds mit 10–90-%-Band; gibt x→Stundenindex zurück
-  function timeSeries(canvas, times, stats, selIdx, u = defU) {
+  function timeSeries(canvas, times, stats, selIdx, u = defU, layer = 'total') {
     const { ctx, w, h } = setup(canvas);
     const ml = { l: 46, r: 12, t: 8, b: 30 };
     const n = times.length;
-    const valid = stats.filter(s => s);
-    const yMax = niceMax(Math.max(1, ...valid.map(s => s.p90)) * u.spdF * 1.1);
+    // Segmentwind der gewählten Schicht; Stunden ohne diese Schicht = Lücke
+    const val = s => (s && s[layer]) || null;
+    const valid = stats.map(val).filter(Boolean);
+    const yMax = niceMax(Math.max(1, ...valid.map(v => v.spdP90)) * u.spdF * 1.1);
     ml.x = i => ml.l + i / (n - 1) * (w - ml.l - ml.r);
     ml.y = v => h - ml.b - v / yMax * (h - ml.t - ml.b);
 
@@ -201,7 +203,7 @@ const Charts = (() => {
     const segments = [];
     let seg = null;
     for (let i = 0; i < n; i++) {
-      if (stats[i]) { (seg = seg || []).push(i); }
+      if (val(stats[i])) { (seg = seg || []).push(i); }
       else if (seg) { segments.push(seg); seg = null; }
     }
     if (seg) segments.push(seg);
@@ -209,14 +211,14 @@ const Charts = (() => {
     for (const s of segments) {
       ctx.fillStyle = C.band;
       ctx.beginPath();
-      s.forEach((i, k) => k ? ctx.lineTo(ml.x(i), ml.y(stats[i].p10 * u.spdF)) : ctx.moveTo(ml.x(i), ml.y(stats[i].p10 * u.spdF)));
-      for (let k = s.length - 1; k >= 0; k--) ctx.lineTo(ml.x(s[k]), ml.y(stats[s[k]].p90 * u.spdF));
+      s.forEach((i, k) => k ? ctx.lineTo(ml.x(i), ml.y(val(stats[i]).spdP10 * u.spdF)) : ctx.moveTo(ml.x(i), ml.y(val(stats[i]).spdP10 * u.spdF)));
+      for (let k = s.length - 1; k >= 0; k--) ctx.lineTo(ml.x(s[k]), ml.y(val(stats[s[k]]).spdP90 * u.spdF));
       ctx.closePath(); ctx.fill();
 
       ctx.strokeStyle = C.mean;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      s.forEach((i, k) => k ? ctx.lineTo(ml.x(i), ml.y(stats[i].meanSpd * u.spdF)) : ctx.moveTo(ml.x(i), ml.y(stats[i].meanSpd * u.spdF)));
+      s.forEach((i, k) => k ? ctx.lineTo(ml.x(i), ml.y(val(stats[i]).spd * u.spdF)) : ctx.moveTo(ml.x(i), ml.y(val(stats[i]).spd * u.spdF)));
       ctx.stroke();
     }
 
