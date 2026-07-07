@@ -18,9 +18,11 @@ const Charts = (() => {
     invalid: '#cbd5e1',
   };
 
-  // je ein Farbton pro Modell (Multi-Modell / Hauptläufe), bis 11 unterscheidbar
+  // je ein Farbton pro Modell (Multi-Modell / Hauptläufe), bis 11 unterscheidbar;
+  // ab dem 12. Modell wiederholen sich die Töne in dunklerer Stufe
   const HUES = [210, 27, 276, 174, 96, 330, 52, 240, 0, 150, 312];
-  const modelColor = (k, a) => `hsla(${HUES[k % HUES.length]}, 62%, 42%, ${a})`;
+  const modelColor = (k, a) =>
+    `hsla(${HUES[k % HUES.length]}, 62%, ${k < HUES.length ? 42 : 28}%, ${a})`;
 
   function setup(canvas) {
     const dpr = window.devicePixelRatio || 1;

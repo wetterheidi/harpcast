@@ -11,17 +11,26 @@
   const MULTI_MODELS = 'ecmwf_ifs025,ecmwf_aifs025,gfs05';
   // deterministische Hauptläufe mit Druckflächendaten (Forecast-API);
   // Modelle außerhalb ihrer Domäne lässt die API stillschweigend weg
-  const DET_MODELS = 'ecmwf_ifs025,gfs_global,icon_d2,icon_eu,icon_global,' +
-    'gem_global,meteofrance_arpege_europe,ukmo_global_deterministic_10km,' +
-    'knmi_harmonie_arome_europe,jma_gsm,cma_grapes_global';
+  const DET_MODELS = 'ecmwf_ifs025,ecmwf_aifs025_single,gfs_global,gfs_hrrr,' +
+    'icon_d2,icon_eu,icon_global,italia_meteo_arpae_icon_2i,' +
+    'gem_global,gem_regional,gem_hrdps_continental,' +
+    'meteofrance_arpege_europe,meteofrance_arpege_world,meteofrance_arome_france,' +
+    'ukmo_global_deterministic_10km,ukmo_uk_deterministic_2km,' +
+    'knmi_harmonie_arome_europe,jma_gsm,jma_msm,cma_grapes_global';
   const MODEL_LABELS = {
     ecmwf_ifs025: 'ECMWF IFS', ecmwf_ifs025_ensemble: 'ECMWF IFS',
     ecmwf_aifs025: 'ECMWF AIFS', ecmwf_aifs025_ensemble: 'ECMWF AIFS',
     gfs05: 'GFS', ncep_gefs05: 'GFS',
-    gfs_global: 'GFS', icon_d2: 'ICON-D2', icon_eu: 'ICON-EU', icon_global: 'ICON',
-    gem_global: 'GEM', meteofrance_arpege_europe: 'ARPEGE',
-    ukmo_global_deterministic_10km: 'UKMO', knmi_harmonie_arome_europe: 'HARMONIE',
-    jma_gsm: 'JMA', cma_grapes_global: 'CMA',
+    gfs_global: 'GFS', gfs_hrrr: 'HRRR',
+    icon_d2: 'ICON-D2', icon_eu: 'ICON-EU', icon_global: 'ICON',
+    italia_meteo_arpae_icon_2i: 'ICON-2I',
+    gem_global: 'GEM', gem_regional: 'GEM-R', gem_hrdps_continental: 'HRDPS',
+    meteofrance_arpege_europe: 'ARPEGE', meteofrance_arpege_world: 'ARPEGE-W',
+    meteofrance_arome_france: 'AROME',
+    ukmo_global_deterministic_10km: 'UKMO', ukmo_uk_deterministic_2km: 'UKMO-2km',
+    knmi_harmonie_arome_europe: 'HARMONIE',
+    jma_gsm: 'JMA', jma_msm: 'JMA-MSM', cma_grapes_global: 'CMA',
+    ecmwf_aifs025_single: 'ECMWF AIFS',
   };
   const modelLabel = id => MODEL_LABELS[id] || id;
 
