@@ -351,7 +351,7 @@ Orientierend-Kennzeichnung, unter $N = 2$ entfällt die Statistik
 Einordnung (**A14**):
 
 - Es wird ausschließlich die **strukturelle Modellvielfalt** abgetastet –
-  keine Anfangswertstörungen. Kleines $N$ (≈ 7–11): distP90 liegt nahe am
+  keine Anfangswertstörungen. Kleines $N$ (≈ 9–15, je nach Ort): distP90 liegt nahe am
   Maximum der Stichprobe, alle Perzentile sind grobkörnig; die Maße sind
   als *Lagebild*, nicht als Wahrscheinlichkeit zu lesen („poor man's
   ensemble“).
@@ -430,7 +430,7 @@ sein – das ist beabsichtigt.
 | A1 | Lineare Interpolation zwischen Druckflächen | Unterhalb ~925 hPa nur 10-m-Wind + 1–2 Flächen: Ekman-Drehung und Low-Level-Jets werden geglättet; größte Profilfehler in der Grenzschicht |
 | A2 | Geopotentielle ≈ geometrische Höhe | < 0,3 % unter 10 km – vernachlässigbar |
 | A3 | Randklemmung über oberster Fläche | Relevant nur, wenn Exithöhe über ~400-hPa-Niveau (≈ 7 km MSL) liegt |
-| A4 | Passives Teilchen | Vorwärtswurf, Absetzanflug, Öffnungsstrecke nicht modelliert (bewusst: rein meteorologisch) |
+| A4 | Passives Teilchen | Vorwärtswurf (Groundspeed × Abbauzeit, typisch 150–250 m in Absetzrichtung), Absetzanflug und Öffnungsstrecke nicht modelliert (bewusst: rein meteorologisch). Operativ: Der HARP markiert den Beginn der reinen Winddrift – der Exit ist um die Wurfstrecke *vor* dem HARP zu setzen |
 | A5 | Zweiphasig konstante Sinkraten | Öffnungsvorgang (~ Sekunden, Übergangsphase) verschmiert; Fehler klein gegen Windunsicherheit |
 | A6 | Stationarität während der Sinkdauer | Sinkdauer ~4–6 min « 1-h-Zeitschritt; bei Frontpassagen/Konvektion verletzt |
 | A7 | Horizontale Homogenität | Gitterauflösung 0,25° (~25 km); Tal-/Hangwind, lokale Konvergenzen unsichtbar – in komplexem Gelände dominierende Fehlerquelle |
@@ -440,7 +440,7 @@ sein – das ist beabsichtigt.
 | A11 | Zeitliche Interpolation der API | ECMWF ENS/GEFS nativ 3-stündlich, Open-Meteo interpoliert auf 1 h – Zwischenstunden tragen keine eigene Information |
 | A12 | Diskretisierung | $\Delta h = 50\,$m (Integration), 100 m (Charts), Rasterzellen ~10–40 m (Karte); Fehler « meteorologische Unsicherheit |
 | A13 | Multi-Modell-Pooling gleichgewichteter Member | ECMWF-Familie dominiert (77 % der Member); IFS/AIFS nicht unabhängig; gemischte Verteilung ggf. multimodal (Abschn. 7.5) |
-| A14 | Hauptlauf-Modus: 1 Lauf = 1 Member | Nur Modellvielfalt, keine Anfangswertunsicherheit; $N \approx 7–11$ → Perzentile grobkörnig; Konsens ≠ Sicherheit (Abschn. 7.6) |
+| A14 | Hauptlauf-Modus: 1 Lauf = 1 Member | Nur Modellvielfalt, keine Anfangswertunsicherheit; $N \approx 9–15$ → Perzentile grobkörnig; Konsens ≠ Sicherheit (Abschn. 7.6) |
 
 ---
 
