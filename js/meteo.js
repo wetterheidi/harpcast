@@ -121,11 +121,19 @@ const Meteo = (() => {
 
   function parse(json) {
     const h = json.hourly;
+    // Modelle außerhalb ihrer Domäne lässt die API meist weg, liefert sie
+    // vereinzelt aber als reine null-Spalten mit (z. B. icon_d2) – solche
+    // Member ohne einen einzigen Wert werden hier verworfen
+    const hasAny = a => Array.isArray(a) && a.some(v => v != null);
+    const alive = s => hasAny(h['wind_speed_10m' + s]) ||
+      LEVELS.some(L => hasAny(h[`wind_speed_${L}hPa` + s]));
     // Suffix je Member aus den Keys ableiten; deckt Einzelmodell ('' bzw.
     // '_memberNN') und Multi-Modell ('_memberNN_<modell>') gleichermaßen ab
     const suffixes = [];
     for (const k of Object.keys(h)) {
-      if (k.startsWith('wind_speed_10m')) suffixes.push(k.slice('wind_speed_10m'.length));
+      if (!k.startsWith('wind_speed_10m')) continue;
+      const s = k.slice('wind_speed_10m'.length);
+      if (alive(s)) suffixes.push(s);
     }
     // Modellkennung je Member ('' bei Einzelmodell-Anfrage)
     const memberModel = suffixes.map(s => s.replace(/^_member\d+/, '').replace(/^_/, ''));
